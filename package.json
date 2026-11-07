@@ -1,0 +1,16 @@
+{
+  "name": "flav4-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FLAV4 storefront, order engine, emails, stock and admin",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "better-sqlite3": "^13.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.0",
+    "express": "^5.3.0",
+    "nodemailer": "^10.0.0"
+  }
+}

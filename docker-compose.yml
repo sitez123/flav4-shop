@@ -1,0 +1,40 @@
+# FLAV4 shop — runs the site straight from this GitHub repo.
+# Secrets (admin password etc.) are NOT in here; they are set on the server.
+services:
+  flav4:
+    image: node:22
+    restart: unless-stopped
+    working_dir: /srv/flav4
+    environment:
+      PORT: "3000"
+      DATA_DIR: /srv/flav4/data
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      FROM_EMAIL: ${FROM_EMAIL:-}
+      OWNER_EMAIL: ${OWNER_EMAIL:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - flav4_data:/srv/flav4/data
+    command: >
+      bash -c "rm -rf /tmp/src && git clone --depth 1 --branch ${GIT_BRANCH:-main} https://github.com/sitez123/flav4-shop /tmp/src
+      && cp -r /tmp/src/. /srv/flav4/ && npm install --omit=dev --no-audit --no-fund && node server.js"
+  web:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    command: caddy reverse-proxy --from ${SITE_HOST:-:80} --to flav4:3000
+    volumes:
+      - caddy_data:/data
+    depends_on:
+      - flav4
+volumes:
+  flav4_data:
+  caddy_data:

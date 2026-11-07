@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#110626">
+<title>FLAV4 | Admin</title>
+<style>
+:root{--base:#0d0623;--pink:#fa36b7;--blue:#08b8fd;--lilac:#d7c0ff;--ghost:#d7ceea}
+*{box-sizing:border-box}html{background:var(--base)}body{margin:0;color:#fff;background:radial-gradient(ellipse at 100% 0%,#5d0d7147,transparent 42%),radial-gradient(ellipse at 0% 60%,#143b965b,transparent 37%),var(--base);font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;-webkit-font-smoothing:antialiased;min-height:100dvh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}[hidden]{display:none!important}
+h1,h2,h3{font-family:"Arial Black",Arial,sans-serif;letter-spacing:-.07em;font-weight:900;margin:0;line-height:.92}
+.micro{font:800 10px/1.5 "Courier New",monospace;letter-spacing:.16em;color:#f8aede}
+.top{height:64px;background:#f7f5ff;color:#0c0823;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,3vw,40px);position:sticky;top:0;z-index:50}
+.wordmark{font:900 36px/1 "Arial Black",Arial,sans-serif;letter-spacing:-.097em}.wordmark span{color:#fa309f}.top small{font:900 10px/1 "Courier New",monospace;letter-spacing:.16em;color:#4a3f6a;margin-left:14px}
+.top button{border:1px solid #1c1736;background:transparent;color:#14112c;height:38px;padding:0 14px;font:900 11px/1 Arial;letter-spacing:.1em;border-radius:2px}
+.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:26px 0 80px}
+.tabs{display:flex;gap:0;border-bottom:1px solid #ba9bfc52;margin:10px 0 24px;overflow-x:auto}.tabs button{background:none;border:0;color:#bab0d6;padding:16px 0 14px;margin-right:26px;font:900 12px/1 Arial;letter-spacing:.08em;position:relative;white-space:nowrap}.tabs button.active{color:#fff}.tabs button.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:linear-gradient(90deg,#19d9fe,#ff39d3);box-shadow:0 0 15px #ff22da}.tabs button b{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#ff3097;color:#fff;font:900 11px/1 Arial;margin-left:7px;vertical-align:middle}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}.stat{border:1px solid #63518c;background:linear-gradient(165deg,#1d0f3c,#120a29);padding:18px 18px 16px;position:relative;overflow:hidden}.stat:before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:var(--c,#f04dda);filter:blur(45px);opacity:.35}.stat small{display:block;font:900 10px/1.3 "Courier New",monospace;letter-spacing:.14em;color:#eabfe9}.stat strong{display:block;font:900 clamp(30px,4vw,44px)/1 "Arial Black",Arial;letter-spacing:-.07em;margin-top:8px}
+.card{border:1px solid #63518c;background:linear-gradient(165deg,#1d0f3c,#120a29);padding:20px 20px 18px;margin-bottom:14px;position:relative;isolation:isolate;overflow:hidden}.card.glow:before{content:"";position:absolute;inset:-20% -10%;background:conic-gradient(from 130deg at 50% 50%,transparent 0deg,var(--c,#f04dda) 50deg,transparent 90deg);opacity:.14;filter:blur(30px);z-index:-1}
+.ord-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}.ord-head h3{font-size:clamp(22px,3vw,30px)}.ord-head .when{font:800 10px/1.6 "Courier New",monospace;letter-spacing:.1em;color:#a69bb7}
+.pill{display:inline-block;padding:7px 11px;font:900 10px/1 "Courier New",monospace;letter-spacing:.12em;border:1px solid;white-space:nowrap}.pill.awaiting_payment{color:#ffd166;border-color:#ffd16688;background:#ffd1661a}.pill.paid{color:#49d6ff;border-color:#49d6ff88;background:#49d6ff1a}.pill.posted{color:#82f651;border-color:#82f65188;background:#82f6511a}.pill.cancelled{color:#ff9caf;border-color:#ff9caf88;background:#ff9caf1a}
+.ord-body{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:16px}.addr{background:#ffffff0b;border-left:3px solid #26bff7;padding:13px 15px}.addr small,.lines small{display:block;font:900 10px/1.3 "Courier New",monospace;letter-spacing:.14em;color:#c5acd2;margin-bottom:7px}.addr pre{font:900 15px/1.45 Arial;margin:0;white-space:pre-wrap}.addr p{margin:9px 0 0;font:400 13px/1.6 Arial;color:#d8c5e9;word-break:break-word}.addr p b{color:#fff}
+.lines .line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #745b996a;font:900 13px/1.3 Arial}.lines .line em{font:900 10px/1.4 monospace;color:#e8a6f0;display:block;letter-spacing:.1em;font-style:normal}.lines .tot{display:flex;justify-content:space-between;padding-top:12px;font:900 20px/1 Arial;letter-spacing:-.04em}
+.ord-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+.btn{border:1px solid #8667a6;background:transparent;color:#fff;padding:12px 14px;font:900 11px/1 Arial;letter-spacing:.1em;transition:background .2s,color .2s,transform .2s}.btn:hover{background:#ed37b5;color:#140a2b;border-color:#ed37b5}.btn.primary{background:linear-gradient(90deg,#fc44bf,#f24dbd 60%,#e06ffa);color:#130629;border:0}.btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px #fa43c76e}.btn.ghost{border-color:#5a4a7a;color:#c9bcdd}.btn.danger:hover{background:#ff5c7a;border-color:#ff5c7a}.btn:disabled{opacity:.45;cursor:not-allowed}
+.inp{border:1px solid #9577ad;background:#ffffff13;padding:12px 13px;color:#fff;font:700 14px/1.3 Arial;min-width:0;width:100%}.inp::placeholder{color:#baaac9}select.inp option{color:#120a29}
+.track{display:flex;gap:8px;flex:1;min-width:240px}
+.stock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.stock-card{border:1px solid #63518c;background:radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--c) 30%,transparent),transparent 55%),linear-gradient(165deg,#1d0f3c,#120a29);padding:22px 22px 20px;position:relative;overflow:hidden;isolation:isolate}.stock-card:hover{border-color:var(--c)}.stock-card img{position:absolute;right:-10px;top:10px;height:150px;opacity:.9;filter:drop-shadow(0 12px 18px #0008) drop-shadow(0 0 14px color-mix(in srgb,var(--c) 70%,transparent));z-index:-1;pointer-events:none}.stock-card small{display:block;font:900 10px/1.3 "Courier New",monospace;letter-spacing:.14em;color:#eabfe9}.stock-card h3{font-size:clamp(22px,3vw,32px);margin:8px 0 14px;max-width:62%}.stock-num{display:flex;align-items:baseline;gap:10px}.stock-num strong{font:900 clamp(54px,8vw,84px)/.9 "Arial Black",Arial;letter-spacing:-.08em}.stock-num span{font:800 10px/1.4 "Courier New",monospace;letter-spacing:.12em;color:#c5acd2}.stock-num.low strong{color:#ffd166}.stock-num.out strong{color:#ff9caf}
+.meter{height:6px;background:#ffffff14;margin:14px 0 16px;position:relative;overflow:hidden}.meter i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#19d9fe,var(--c));box-shadow:0 0 12px var(--c)}
+.restock{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.restock .btn{padding:11px 12px}.restock .set{display:flex;gap:6px;margin-left:auto}.restock .set .inp{width:84px;padding:10px}
+.sold{font:800 10px/1.5 "Courier New",monospace;letter-spacing:.1em;color:#a69bb7;margin-top:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.sold label{display:flex;gap:7px;align-items:center;cursor:pointer;color:#c9bcdd}.sold input{accent-color:#fa36b7}
+.log{margin-top:26px}.log .row{display:grid;grid-template-columns:150px 1fr auto auto;gap:12px;padding:10px 0;border-bottom:1px solid #745b996a;font:700 12px/1.4 Arial;color:#c9bcdd}.log .row b{color:#fff}.log .row .pos{color:#82f651}.log .row .neg{color:#ff9caf}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:16px 14px}.form .full{grid-column:1/-1}.f label{display:block;font:900 10px/1.4 "Courier New",monospace;letter-spacing:.12em;color:#f8d8f5;margin-bottom:7px}.f .hint{font:400 11px/1.5 Arial;color:#a69bb7;margin-top:6px}
+.countries{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;max-height:330px;overflow:auto;border:1px solid #5a4a7a;padding:12px;background:#ffffff08}.countries label{display:flex;gap:9px;align-items:center;font:700 13px/1.3 Arial;padding:5px 4px;cursor:pointer;color:#d8c5e9}.countries label.on{color:#fff}.countries input{accent-color:#fa36b7;width:16px;height:16px;margin:0}
+.csearch{margin-bottom:10px}.chosen{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}.chosen span{border:1px solid #ff8fd6;color:#ffd7f3;padding:6px 10px;font:900 10px/1 "Courier New",monospace;letter-spacing:.1em}
+.toast{position:fixed;right:22px;bottom:28px;z-index:800;min-width:240px;padding:18px 24px;background:#f449c3;color:#100825;border:1px solid #fff5;box-shadow:0 10px 55px #02000bab;font:900 13px/1.3 Arial;transform:translateY(30px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}.toast.visible{transform:translateY(0);opacity:1}
+.login{min-height:calc(100dvh - 64px);display:grid;place-items:center;padding:30px 16px}.login form{width:min(420px,100%);border:1px solid #c35dff78;background:linear-gradient(150deg,#20104a,#0e0624 55%,#1a0935);padding:34px 30px;box-shadow:0 30px 100px #0009}.login h1{font-size:46px;margin:8px 0 22px}.login h1 span{color:#fb39bc}
+.empty{text-align:center;color:#ddd0ee;padding:60px 20px}.empty b{display:block;font:900 38px/.9 "Arial Black",Arial;letter-spacing:-.07em;margin-bottom:12px;color:#fff}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.filterbar .btn.on{background:#ed37b5;color:#140a2b;border-color:#ed37b5}
+.ebox .row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;padding:10px 0;border-bottom:1px solid #745b996a;font:700 12px/1.4 Arial;color:#c9bcdd;align-items:center}.ebox .row b{color:#fff}.ebox .ok{color:#82f651}.ebox .bad{color:#ff9caf}.ebox .warn{color:#ffd166}
+.note{border:1px solid #8072bb80;border-left:3px solid #26bff7;padding:14px 16px;color:#d8c5e9;font:400 13px/1.65 Arial;margin-bottom:18px}.note b{color:#fff}
+@media(max-width:760px){.stats{grid-template-columns:1fr 1fr}.ord-body{grid-template-columns:1fr}.stock-grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.log .row{grid-template-columns:1fr auto;font-size:11px}.log .row span:first-child{grid-column:1/-1;color:#a69bb7}.top small{display:none}.wrap{width:calc(100% - 24px)}.toast{left:16px;right:16px;bottom:16px;min-width:0}.ebox .row{grid-template-columns:1fr auto}.ebox .row span:first-child{grid-column:1/-1;color:#a69bb7}}
+.modal{position:fixed;inset:0;z-index:600;background:rgba(5,2,20,.78);backdrop-filter:blur(8px);display:grid;place-items:center;padding:16px}.modal-box{width:min(440px,100%);border:1px solid #c35dff78;background:linear-gradient(150deg,#20104a,#0e0624 55%,#1a0935);padding:26px 24px;box-shadow:0 30px 100px #0009}.modal-box p{font:700 16px/1.5 Arial;margin:0 0 20px}.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}.modal-box.wide{width:min(760px,100%);padding:14px;height:min(86dvh,900px);display:flex;flex-direction:column}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}#mailFrame{flex:1;width:100%;border:0;background:#0d0623}
+</style>
+</head>
+<body>
+<header class="top"><div><a class="wordmark" href="/">FLAV<span>4</span>.</a><small>ADMIN</small></div><button id="logout" hidden>LOG OUT</button></header>
+<div id="app"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="ask" hidden><div class="modal-box"><p id="askText"></p><div class="modal-actions"><button class="btn ghost" data-ask="no">NO, GO BACK</button><button class="btn primary" data-ask="yes">YES, DO IT</button></div></div></div>
+<div class="modal" id="mailView" hidden><div class="modal-box wide"><div class="modal-head"><span class="micro" id="mailTitle">EMAIL</span><button class="btn ghost" data-close-mail>CLOSE ×</button></div><iframe id="mailFrame" title="Email preview"></iframe></div></div>
+<script>
+(()=>{'use strict';
+const $=(s,w=document)=>w.querySelector(s),$$=(s,w=document)=>[...w.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let D=null, tab='orders', ofilter='open', csearch='', toastTimer;
+const ask=m=>new Promise(res=>{const d=$('#ask');$('#askText').textContent=m;d.hidden=false;d.onclick=e=>{const b=e.target.closest('[data-ask]');if(!b)return;d.hidden=true;res(b.dataset.ask==='yes');};});
+const showMail=(title,html)=>{$('#mailTitle').textContent=title;$('#mailFrame').srcdoc=html;$('#mailView').hidden=false;};
+const toast=m=>{const n=$('#toast');clearTimeout(toastTimer);n.textContent=m;n.classList.add('visible');toastTimer=setTimeout(()=>n.classList.remove('visible'),2600);};
+const api=async(url,body)=>{const r=await fetch(url,body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});if(r.status===401){login();throw new Error('login');}const d=await r.json();if(!r.ok)throw new Error(d.error||'Error');return d;};
+const money=n=>D.settings.symbol+Number(n).toFixed(2);
+const when=iso=>{try{return new Intl.DateTimeFormat('en-GB',{timeZone:D.settings.timezone,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(iso)).toUpperCase();}catch{return iso;}};
+const addr=o=>[o.name,o.address1,o.address2,o.city,o.region,o.postcode,o.country].filter(Boolean).join('\n');
+const STATUS={awaiting_payment:'AWAITING PAYMENT',paid:'PAID · TO POST',posted:'POSTED',cancelled:'CANCELLED'};
+
+function login(){$('#logout').hidden=true;$('#app').innerHTML=`<div class="login"><form id="loginForm"><div class="micro">FLAV4 / BACK OFFICE</div><h1>SIGN<span>.</span><br>IN.</h1><input class="inp" type="password" id="pw" placeholder="Admin password" autocomplete="current-password" autofocus><div style="margin-top:12px"><button class="btn primary" style="width:100%;padding:16px">OPEN ADMIN ↗</button></div><p id="loginErr" class="micro" style="color:#ff9caf;margin-top:12px" hidden></p></form></div>`;
+ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/admin/login',{password:$('#pw').value});await refresh();}catch(err){$('#loginErr').hidden=false;$('#loginErr').textContent=err.message==='login'?'WRONG PASSWORD.':err.message.toUpperCase();}});}
+async function refresh(){D=await api('/api/admin/overview');$('#logout').hidden=false;render();}
+function render(){
+ const s=D.stats;
+ $('#app').innerHTML=`<div class="wrap">
+ <div class="stats"><div class="stat" style="--c:#ffd166"><small>AWAITING PAYMENT</small><strong>${s.awaiting}</strong></div><div class="stat" style="--c:#49d6ff"><small>PAID · TO POST</small><strong>${s.toPost}</strong></div><div class="stat" style="--c:#82f651"><small>POSTED</small><strong>${s.posted}</strong></div><div class="stat" style="--c:#f04dda"><small>PAID REVENUE</small><strong>${money(s.revenue)}</strong></div></div>
+ <div class="tabs">${[['orders','ORDERS',s.awaiting+s.toPost],['stock','STOCK',D.products.filter(p=>p.stock<=D.settings.lowStock).length],['settings','SETTINGS',0],['emails','EMAILS',0]].map(([k,l,n])=>`<button data-tab="${k}" class="${tab===k?'active':''}">${l}${n?`<b>${n}</b>`:''}</button>`).join('')}</div>
+ <div id="pane"></div></div>`;
+ ({orders,stock,settings,emails})[tab]();
+}
+function orders(){
+ const list=D.orders.filter(o=>ofilter==='all'||(ofilter==='open'?['awaiting_payment','paid'].includes(o.status):o.status===ofilter));
+ $('#pane').innerHTML=`<div class="filterbar">${[['open','OPEN'],['awaiting_payment','AWAITING PAYMENT'],['paid','TO POST'],['posted','POSTED'],['cancelled','CANCELLED'],['all','ALL']].map(([k,l])=>`<button class="btn ghost ${ofilter===k?'on':''}" data-of="${k}">${l}</button>`).join('')}</div>
+ ${list.length?list.map(o=>`<div class="card glow" style="--c:${o.status==='posted'?'#82f651':o.status==='paid'?'#49d6ff':o.status==='cancelled'?'#ff9caf':'#ffd166'}" data-order="${o.id}">
+  <div class="ord-head"><div><div class="when">${when(o.created_at)} · ${esc(o.country)}</div><h3>${esc(o.ref)}</h3></div><span class="pill ${o.status}">${STATUS[o.status]}</span></div>
+  <div class="ord-body"><div class="addr"><small>POST TO</small><pre>${esc(addr(o))}</pre><p><b>Email</b> ${esc(o.email)}<br><b>Phone</b> ${esc(o.phone||'—')}${o.notes?`<br><b>Note</b> ${esc(o.notes)}`:''}${o.tracking?`<br><b>Tracking</b> ${esc(o.tracking)}`:''}</p></div>
+  <div class="lines"><small>ITEMS</small>${o.items.map(i=>`<div class="line"><span><em>${esc(i.brand)} / ${esc(i.series)}</em>${esc(i.flavour.toUpperCase())} × ${i.qty}</span><span>${money(i.qty*i.price)}</span></div>`).join('')}<div class="line"><span>DELIVERY</span><span>${money(o.shipping)}</span></div><div class="tot"><span>TOTAL</span><span>${money(o.total)}</span></div></div></div>
+  <div class="ord-actions"><button class="btn" data-copy="${o.id}">COPY ADDRESS</button>
+   ${o.status==='awaiting_payment'?`<button class="btn primary" data-status="paid" data-id="${o.id}">MARK PAID ✓</button>`:''}
+   ${o.status==='paid'?`<div class="track"><input class="inp" placeholder="Tracking number" id="trk-${o.id}" value="${esc(o.tracking||'')}"><button class="btn primary" data-status="posted" data-id="${o.id}">MARK POSTED ↗</button></div>`:''}
+   ${o.status==='posted'?`<button class="btn ghost" data-status="paid" data-id="${o.id}">UNDO POSTED</button>`:''}
+   ${o.status==='cancelled'?`<button class="btn ghost" data-status="awaiting_payment" data-id="${o.id}">REINSTATE</button>`:`<button class="btn ghost danger" data-status="cancelled" data-id="${o.id}">CANCEL</button>`}
+  </div></div>`).join(''):`<div class="empty"><b>NOTHING HERE.</b>New orders land in this list the moment a customer places one.</div>`}`;
+}
+function stock(){
+ const low=D.settings.lowStock;
+ $('#pane').innerHTML=`<div class="note"><b>Stock is in sleeves.</b> Every order takes its sleeves off automatically. Tap a button to add a delivery, or type the real count after you've counted the shelf. Below <b>${low}</b> and you get a low-stock email.</div>
+ <div class="stock-grid">${D.products.map(p=>{const cls=p.stock===0?'out':p.stock<=low?'low':'';const max=Math.max(p.stock,p.sold,20);return`<div class="stock-card" style="--c:${p.accent}" data-pid="${p.id}"><img src="${p.image}" alt=""><small>${esc(p.brand)} / ${esc(p.series)}</small><h3>${esc(p.flavour.toUpperCase())}</h3>
+  <div class="stock-num ${cls}"><strong>${p.stock}</strong><span>${p.stock===0?'SOLD OUT':p.stock<=low?'RUNNING LOW':'SLEEVES IN STOCK'}</span></div>
+  <div class="meter"><i style="width:${Math.min(100,p.stock/max*100)}%"></i></div>
+  <div class="restock">${[1,5,10,50].map(n=>`<button class="btn" data-add="${n}">+${n}</button>`).join('')}<button class="btn ghost" data-add="-1">−1</button><div class="set"><input class="inp" type="number" min="0" placeholder="${p.stock}" aria-label="Set exact count"><button class="btn" data-set>SET</button></div></div>
+  <div class="sold"><span>${p.sold} SOLD ALL TIME</span><label><input type="checkbox" data-active ${p.active?'checked':''}> SHOWN ON SITE</label></div></div>`;}).join('')}</div>
+ <div class="log"><div class="micro" style="margin-bottom:10px">STOCK MOVEMENTS</div>${D.log.length?D.log.map(l=>{const p=D.products.find(x=>x.id===l.product_id)||{};return`<div class="row"><span>${when(l.at)}</span><span><b>${esc(p.flavour||l.product_id)}</b> · ${esc(l.reason)}</span><span class="${l.change>=0?'pos':'neg'}">${l.change>=0?'+':''}${l.change}</span><span>= ${l.balance}</span></div>`;}).join(''):'<div class="row"><span>—</span><span>No movements yet.</span></div>'}</div>`;
+}
+function settings(){
+ const s=D.settings;const sel=new Set(s.countries);
+ const list=D.countriesAll.filter(c=>!csearch||c.name.toLowerCase().includes(csearch.toLowerCase())||c.code.toLowerCase()===csearch.toLowerCase());
+ $('#pane').innerHTML=`<form id="setForm" class="form">
+  <div class="note full">${D.smtp?'<b>Email sending is on.</b> Order emails go to the owner address below.':'<b>Email sending is not switched on yet.</b> Orders still save, and every email is kept in the EMAILS tab so nothing is lost. The server needs the mailbox login (SMTP) added to its settings file to actually send.'}</div>
+  <div class="f"><label>OWNER EMAIL — WHERE NEW ORDERS GO</label><input class="inp" name="ownerEmail" type="email" value="${esc(s.ownerEmail)}" placeholder="orders@yourdomain.com"></div>
+  <div class="f"><label>SEND FROM</label><input class="inp" name="fromEmail" type="email" value="${esc(s.fromEmail)}" placeholder="orders@yourdomain.com"><div class="hint">Usually the same mailbox the server logs in with.</div></div>
+  <div class="f"><label>PRICE PER SLEEVE</label><input class="inp" name="price" type="number" step="0.01" min="0" value="${s.price}"></div>
+  <div class="f"><label>DELIVERY CHARGE PER ORDER</label><input class="inp" name="shipping" type="number" step="0.01" min="0" value="${s.shipping}"></div>
+  <div class="f"><label>CURRENCY CODE</label><input class="inp" name="currency" value="${esc(s.currency)}" maxlength="3" placeholder="USD"></div>
+  <div class="f"><label>CURRENCY SYMBOL</label><input class="inp" name="symbol" value="${esc(s.symbol)}" maxlength="4" placeholder="$"></div>
+  <div class="f"><label>SAME-DAY DISPATCH CUT-OFF (HOUR, 24H)</label><input class="inp" name="cutoffHour" type="number" min="0" max="23" value="${s.cutoffHour}"></div>
+  <div class="f"><label>DISPATCH TIME ZONE</label><input class="inp" name="timezone" value="${esc(s.timezone)}" placeholder="Asia/Dubai"><div class="hint">Where the parcels leave from. e.g. Asia/Dubai, Asia/Riyadh, Europe/Istanbul.</div></div>
+  <div class="f"><label>LOW-STOCK WARNING AT</label><input class="inp" name="lowStock" type="number" min="0" value="${s.lowStock}"></div>
+  <div class="f"><label>MAX SLEEVES PER ORDER</label><input class="inp" name="maxPerOrder" type="number" min="1" value="${s.maxPerOrder}"></div>
+  <div class="f full"><label>COUNTRIES YOU DELIVER TO — ${sel.size} CHOSEN</label><div class="chosen">${[...sel].map(c=>`<span>${esc((D.countriesAll.find(x=>x.code===c)||{}).name||c)}</span>`).join('')||'<span style="border-color:#ff9caf;color:#ff9caf">NONE — CHECKOUT WILL BE BLOCKED</span>'}</div><input class="inp csearch" id="csearch" placeholder="Search countries…" value="${esc(csearch)}"><div class="countries" id="countries">${list.map(c=>`<label class="${sel.has(c.code)?'on':''}"><input type="checkbox" value="${c.code}" ${sel.has(c.code)?'checked':''}>${esc(c.name)}</label>`).join('')}</div><div class="hint">Only tick countries where it's legal to sell and ship these products. Customers can only choose from this list.</div></div>
+  <div class="f"><label>TELEGRAM BOT TOKEN (OPTIONAL)</label><input class="inp" name="telegramToken" value="${esc(s.telegramToken)}" placeholder="From @BotFather"></div>
+  <div class="f"><label>TELEGRAM CHAT ID (OPTIONAL)</label><input class="inp" name="telegramChat" value="${esc(s.telegramChat)}" placeholder="Your chat id"><div class="hint">Fill both and every new order also pings Telegram.</div></div>
+  <div class="full" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" style="padding:16px 22px">SAVE SETTINGS ✓</button><button class="btn" type="button" id="testEmail">SEND TEST EMAIL</button></div></form>`;
+ $('#csearch').addEventListener('input',e=>{csearch=e.target.value;const checked=$$('#countries input:checked').map(i=>i.value);checked.forEach(c=>sel.add(c));$$('#countries input:not(:checked)').forEach(i=>sel.delete(i.value));D.settings.countries=[...sel];settings();$('#csearch').focus();$('#csearch').setSelectionRange(csearch.length,csearch.length);});
+ $('#countries').addEventListener('change',e=>{const c=e.target.value;if(e.target.checked)sel.add(c);else sel.delete(c);D.settings.countries=[...sel];e.target.parentElement.classList.toggle('on',e.target.checked);$('.chosen').innerHTML=[...sel].map(c=>`<span>${esc((D.countriesAll.find(x=>x.code===c)||{}).name||c)}</span>`).join('');$('.f.full label').textContent=`COUNTRIES YOU DELIVER TO — ${sel.size} CHOSEN`;});
+ $('#setForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.target;const body={};['ownerEmail','fromEmail','price','shipping','currency','symbol','cutoffHour','timezone','lowStock','maxPerOrder','telegramToken','telegramChat'].forEach(k=>body[k]=f.elements[k].value);body.countries=[...sel];try{await api('/api/admin/settings',body);toast('SETTINGS SAVED');await refresh();}catch(err){toast(err.message.toUpperCase());}});
+ $('#testEmail').addEventListener('click',async()=>{try{const r=await api('/api/admin/test-email',{});toast(r.status==='sent'?'TEST EMAIL SENT':r.status==='saved'?'SAVED TO OUTBOX — SMTP NOT SET UP':('FAILED: '+r.error).toUpperCase());}catch(err){toast(err.message.toUpperCase());}});
+}
+function emails(){
+ $('#pane').innerHTML=`<div class="note">Every email the shop tries to send is listed here, newest first. <b>SENT</b> means it left. <b>SAVED</b> means the mailbox isn't connected yet but the email is kept. Tap one to read it.</div><div class="ebox">${D.outbox.length?D.outbox.map(m=>`<div class="row"><span>${when(m.at)}</span><span><b>${esc(m.subject)}</b><br>to ${esc(m.to_addr||'—')}${m.error?`<br><span class="${m.status==='failed'?'bad':'warn'}">${esc(m.error)}</span>`:''}</span><span><span class="${m.status==='sent'?'ok':m.status==='failed'?'bad':'warn'}">${m.status.toUpperCase()}</span> <button class="btn ghost" data-mail="${esc(m.file||m.id)}" data-subject="${esc(m.subject)}" style="margin-left:8px">OPEN</button></span></div>`).join(''):'<div class="row"><span>—</span><span>No emails yet.</span></div>'}</div>`;
+}
+document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+ if(d.tab){tab=d.tab;render();return;}
+ if(d.of){ofilter=d.of;orders();return;}
+ if(d.copy){const o=D.orders.find(x=>x.id==d.copy);try{await navigator.clipboard.writeText(addr(o)+'\n'+o.phone);toast('ADDRESS COPIED');}catch{toast('COPY NOT ALLOWED HERE');}return;}
+ if(d.status){const id=d.id;const body={status:d.status};const trk=$('#trk-'+id);if(trk)body.tracking=trk.value.trim();if(d.status==='posted'&&!body.tracking&&!(await ask('No tracking number — mark as posted anyway?')))return;if(d.status==='cancelled'&&!(await ask('Cancel this order and put the stock back?')))return;try{await api(`/api/admin/orders/${id}/status`,body);toast(d.status==='posted'?'MARKED POSTED — CUSTOMER EMAILED':'UPDATED');await refresh();}catch(err){toast(err.message.toUpperCase());}return;}
+ const card=t.closest('[data-pid]');
+ if(card&&d.add!==undefined){try{await api(`/api/admin/stock/${card.dataset.pid}`,{change:Number(d.add)});await refresh();toast('STOCK UPDATED');}catch(err){toast(err.message.toUpperCase());}return;}
+ if(card&&d.set!==undefined){const v=$('input[type=number]',card).value;if(v==='')return;try{await api(`/api/admin/stock/${card.dataset.pid}`,{set:Number(v)});await refresh();toast('COUNT SET');}catch(err){toast(err.message.toUpperCase());}return;}
+ if(d.mail){try{const html=window.FLAV4_PREVIEW?window.FLAV4_PREVIEW.email(d.mail):await (await fetch('/api/admin/outbox/'+d.mail)).text();showMail(d.subject,html);}catch{toast('COULD NOT OPEN');}return;}
+ if(t.closest('[data-close-mail]')){$('#mailView').hidden=true;return;}
+ if(t.id==='logout'){await api('/api/admin/logout',{});login();}
+});
+document.addEventListener('change',async e=>{const t=e.target;if(t.dataset.active!==undefined){const card=t.closest('[data-pid]');try{await api(`/api/admin/products/${card.dataset.pid}`,{active:t.checked});toast(t.checked?'SHOWN ON SITE':'HIDDEN FROM SITE');}catch(err){toast(err.message.toUpperCase());}}});
+refresh().catch(()=>{});
+})();
+</script>
+</body>
+</html>
