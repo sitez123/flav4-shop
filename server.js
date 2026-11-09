@@ -36,17 +36,17 @@ CREATE TABLE IF NOT EXISTS outbox (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT
 `);
 
 const DEFAULT_PRODUCTS = [
-  { id: 'esse-applemint', number: '01', brand: 'ESSE', family: 'esse', flavour: 'Applemint & Wine', series: 'Change Double', accent: '#19bcff', artA: '#101b71', artB: '#1f064c', image: '/img/esse-applemint.webp', studio: '/img/esse-studio.webp', real: '/img/esse-photo.webp', description: 'ESSE Change Double Applemint & Wine. A bold blue-to-magenta colour story with striking graphic details. Ten packs per sleeve.', stock: 40, sort: 1 },
-  { id: 'esse-limewave', number: '02', brand: 'ESSE', family: 'esse', flavour: 'Limewave', series: 'Change Double', accent: '#82f651', artA: '#064f42', artB: '#071c2a', image: '/img/esse-limewave.webp', studio: '', real: '', description: 'ESSE Change Double Limewave. Fresh lime with a clean, bright finish. Ten packs per sleeve.', stock: 40, sort: 2 },
-  { id: 'topgun-iceberry', number: '03', brand: 'TOP GUN', family: 'topgun', flavour: 'Iceberry', series: 'Dual Pack', accent: '#ef47cb', artA: '#21145d', artB: '#0c153c', image: '/img/topgun-iceberry.webp', studio: '/img/topgun-studio.webp', real: '/img/topgun-photo.webp', description: 'Top Gun Iceberry. A striking black pack with bold blue and magenta concentric graphics. Ten packs per sleeve.', stock: 40, sort: 3 },
-  { id: 'topgun-citrusburst', number: '04', brand: 'TOP GUN', family: 'topgun', flavour: 'Citrusburst', series: 'Dual Pack', accent: '#ff9d3e', artA: '#572237', artB: '#220c26', image: '/img/topgun-citrusburst.webp', studio: '', real: '', description: 'Top Gun Citrusburst. A sharp citrus hit in the bold black Top Gun pack. Ten packs per sleeve.', stock: 40, sort: 4 },
+  { id: 'platinum-double-mix', number: '01', brand: 'PLATINUM SEVEN', family: 'platinum', flavour: 'Double Mix', series: 'Double Series', accent: '#f54db1', artA: '#4b1680', artB: '#170927', image: '/img/platinum-double-mix.webp', studio: '', real: '/img/platinum-double-mix.webp', description: 'Platinum Seven Double Mix. Original pack photography for the FLAV4 UK collection. One sleeve contains ten packs of twenty.', stock: 0, sort: 1 },
+  { id: 'platinum-double-switch', number: '02', brand: 'PLATINUM SEVEN', family: 'platinum', flavour: 'Double Switch', series: 'Double Series', accent: '#af87f2', artA: '#32125c', artB: '#170e38', image: '/img/platinum-double-switch.webp', studio: '', real: '/img/platinum-double-switch.webp', description: 'Platinum Seven Double Switch. Original pack photography for the FLAV4 UK collection. One sleeve contains ten packs of twenty.', stock: 0, sort: 2 },
+  { id: 'topgun-iceberry', number: '03', brand: 'TOP GUN', family: 'topgun', flavour: 'Iceberry', series: 'Duo Point', accent: '#28b9ec', artA: '#171451', artB: '#0b1238', image: '/img/topgun-iceberry-real.webp', studio: '', real: '/img/topgun-iceberry-real.webp', description: 'Top Gun Iceberry, pictured in its original product packaging. One sleeve contains ten packs of twenty.', stock: 0, sort: 3 },
+  { id: 'topgun-mintberry', number: '04', brand: 'TOP GUN', family: 'topgun', flavour: 'Mint Berry', series: 'Duo Point', accent: '#70b3ae', artA: '#103c55', artB: '#0a172e', image: '/img/topgun-mintberry.webp', studio: '', real: '/img/topgun-mintberry.webp', description: 'Top Gun Mint Berry, pictured in its original product packaging. One sleeve contains ten packs of twenty.', stock: 0, sort: 4 },
 ];
 const DEFAULT_SETTINGS = {
-  currency: 'USD', symbol: '$', price: 60, shipping: 15,
-  cutoffHour: 10, timezone: 'Asia/Dubai',
+  currency: 'GBP', symbol: '£', price: 60, shipping: 15,
+  cutoffHour: 10, timezone: 'Europe/London',
   ownerEmail: process.env.OWNER_EMAIL || '', fromEmail: process.env.FROM_EMAIL || '', fromName: 'FLAV4',
   lowStock: 5, maxPerOrder: 25,
-  countries: ['AE', 'SA', 'QA', 'KW', 'BH', 'OM'],
+  countries: ['GB'],
   telegramToken: process.env.TELEGRAM_BOT_TOKEN || '', telegramChat: process.env.TELEGRAM_CHAT_ID || '',
 };
 const COUNTRIES = require('./countries.json'); // [{code,name}]
@@ -56,6 +56,23 @@ const insertProduct = db.prepare(`INSERT OR IGNORE INTO products (id,number,bran
 DEFAULT_PRODUCTS.forEach(p => insertProduct.run(p));
 const getSetting = db.prepare('SELECT value FROM settings WHERE key=?');
 const putSetting = db.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value');
+/* One-time UK storefront migration. Existing historical orders and retired stock
+   records stay in the database; no inventory is invented for new products. */
+const UK_CATALOGUE_REVISION = 'flav4_uk_catalogue_2026_11';
+if (!getSetting.get(UK_CATALOGUE_REVISION)) {
+  db.transaction(() => {
+    const updateProduct = db.prepare(`UPDATE products SET number=@number, brand=@brand, family=@family,
+      flavour=@flavour, series=@series, accent=@accent, artA=@artA, artB=@artB, image=@image,
+      studio=@studio, real=@real, description=@description, sort=@sort WHERE id=@id`);
+    DEFAULT_PRODUCTS.forEach(p => updateProduct.run(p));
+    db.prepare("UPDATE products SET active=0 WHERE id IN ('esse-applemint','esse-limewave','topgun-citrusburst')").run();
+    const ukSettings = { currency: 'GBP', symbol: '£', price: 60, shipping: 15,
+      cutoffHour: 10, timezone: 'Europe/London', countries: ['GB'] };
+    for (const [key,value] of Object.entries(ukSettings)) putSetting.run(key, JSON.stringify(value));
+    putSetting.run(UK_CATALOGUE_REVISION, JSON.stringify(new Date().toISOString()));
+  })();
+}
+
 function settings() {
   const out = { ...DEFAULT_SETTINGS };
   for (const k of Object.keys(DEFAULT_SETTINGS)) { const r = getSetting.get(k); if (r) out[k] = JSON.parse(r.value); }
@@ -70,7 +87,7 @@ function publicProducts() {
 }
 function publicSettings() {
   const s = settings();
-  return { currency: s.currency, symbol: s.symbol, price: s.price, shipping: s.shipping, cutoffHour: s.cutoffHour, timezone: s.timezone, lowStock: s.lowStock, maxPerOrder: s.maxPerOrder, countries: s.countries.map(c => ({ code: c, name: countryName(c) })) };
+  return { currency: s.currency, symbol: s.symbol, price: s.price, shipping: s.shipping, cutoffHour: s.cutoffHour, timezone: s.timezone, lowStock: s.lowStock, maxPerOrder: s.maxPerOrder, countries: [{ code: 'GB', name: 'United Kingdom' }] };
 }
 
 // ---------- email ----------
@@ -160,9 +177,10 @@ app.post('/api/orders', async (req, res) => {
   if (o.name.length < 2) errors.name = 'Enter your full name.';
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.email)) errors.email = 'Enter a valid email address.';
   if (o.phone.length < 6) errors.phone = 'Enter a phone number the courier can reach.';
-  if (!s.countries.includes(o.country_code)) errors.country = 'Choose a country we deliver to.';
+  if (o.country_code !== 'GB') errors.country = 'Delivery is available to UK addresses only.';
   if (o.address1.length < 4) errors.address1 = 'Enter your street address.';
-  if (o.city.length < 2) errors.city = 'Enter your city.';
+  if (o.city.length < 2) errors.city = 'Enter your town or city.';
+  if (!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(o.postcode)) errors.postcode = 'Enter a valid UK postcode.';
   if (b.adult !== true) errors.adult = 'You must confirm you are 18 or over.';
   const cart = Array.isArray(b.items) ? b.items : [];
   const items = [];
@@ -215,7 +233,7 @@ app.get('/api/admin/me', auth, (req, res) => res.json({ ok: true }));
 app.get('/api/admin/overview', auth, (req, res) => {
   const s = settings();
   const orders = db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 300').all().map(o => ({ ...o, items: JSON.parse(o.items) }));
-  const products = db.prepare('SELECT * FROM products ORDER BY sort').all();
+  const products = db.prepare("SELECT * FROM products WHERE id IN ('platinum-double-mix','platinum-double-switch','topgun-iceberry','topgun-mintberry') ORDER BY sort").all();
   const log = db.prepare('SELECT * FROM stock_log ORDER BY id DESC LIMIT 40').all();
   const outbox = db.prepare('SELECT * FROM outbox ORDER BY id DESC LIMIT 40').all();
   const stats = {
@@ -224,7 +242,7 @@ app.get('/api/admin/overview', auth, (req, res) => {
     posted: orders.filter(o => o.status === 'posted').length,
     revenue: orders.filter(o => ['paid', 'posted'].includes(o.status)).reduce((a, o) => a + o.total, 0),
   };
-  res.json({ settings: { ...s, telegramToken: s.telegramToken ? '••••' : '' }, smtp: !!process.env.SMTP_HOST, orders, products, log, outbox, stats, countriesAll: COUNTRIES });
+  res.json({ settings: { ...s, telegramToken: s.telegramToken ? '••••' : '' }, smtp: !!process.env.SMTP_HOST, orders, products, log, outbox, stats, countriesAll: COUNTRIES.filter(c => c.code === 'GB') });
 });
 app.post('/api/admin/orders/:id/status', auth, (req, res) => {
   const o = db.prepare('SELECT * FROM orders WHERE id=?').get(Number(req.params.id));
@@ -272,11 +290,11 @@ app.post('/api/admin/settings', auth, (req, res) => {
   const b = req.body || {}; const cur = settings();
   const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
   const out = {
-    currency: String(b.currency || cur.currency).toUpperCase().slice(0, 3), symbol: String(b.symbol ?? cur.symbol).slice(0, 4),
-    price: num(b.price, cur.price), shipping: num(b.shipping, cur.shipping), cutoffHour: Math.min(23, Math.max(0, Math.floor(num(b.cutoffHour, cur.cutoffHour)))),
-    timezone: String(b.timezone || cur.timezone).slice(0, 60), ownerEmail: String(b.ownerEmail ?? cur.ownerEmail).trim().slice(0, 120), fromEmail: String(b.fromEmail ?? cur.fromEmail).trim().slice(0, 120), fromName: String(b.fromName || cur.fromName).slice(0, 60),
+    currency: 'GBP', symbol: '£',
+    price: num(b.price, cur.price), shipping: num(b.shipping, cur.shipping), cutoffHour: 10,
+    timezone: 'Europe/London', ownerEmail: String(b.ownerEmail ?? cur.ownerEmail).trim().slice(0, 120), fromEmail: String(b.fromEmail ?? cur.fromEmail).trim().slice(0, 120), fromName: String(b.fromName || cur.fromName).slice(0, 60),
     lowStock: Math.max(0, Math.floor(num(b.lowStock, cur.lowStock))), maxPerOrder: Math.max(1, Math.floor(num(b.maxPerOrder, cur.maxPerOrder))),
-    countries: Array.isArray(b.countries) ? b.countries.filter(c => COUNTRIES.some(x => x.code === c)) : cur.countries,
+    countries: ['GB'],
     telegramToken: b.telegramToken && b.telegramToken !== '••••' ? String(b.telegramToken).trim() : cur.telegramToken, telegramChat: String(b.telegramChat ?? cur.telegramChat).trim(),
   };
   try { new Intl.DateTimeFormat('en-GB', { timeZone: out.timezone }); } catch { return res.status(400).json({ error: 'Unknown timezone' }); }

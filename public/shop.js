@@ -1,10 +1,11 @@
 (()=>{'use strict';
 const $=(sel,within=document)=>within.querySelector(sel), $$=(sel,within=document)=>[...within.querySelectorAll(sel)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let PRODUCTS=[], byId={}, S={symbol:'$',price:0,shipping:0,cutoffHour:10,timezone:'Asia/Dubai',lowStock:5,maxPerOrder:25,countries:[]};
+let PRODUCTS=[], byId={}, S={symbol:'£',price:60,shipping:15,cutoffHour:10,timezone:'Europe/London',lowStock:5,maxPerOrder:25,countries:[]};
 const cart=JSON.parse(localStorage.getItem('flav4_bag')||'{}');
 let filter='all', currentId=null, step='bag', lastFocus=null, toastTimer, placed=null;
 const form=JSON.parse(sessionStorage.getItem('flav4_form')||'{}');
+ form.country='GB';
 const fmt=n=>S.symbol+Number(n).toFixed(2);
 const fmtShort=n=>S.symbol+(Number.isInteger(Number(n))?Number(n):Number(n).toFixed(2));
 const saveCart=()=>localStorage.setItem('flav4_bag',JSON.stringify(cart));
@@ -22,7 +23,7 @@ async function load(){
  Object.keys(cart).forEach(id=>{if(!byId[id])delete cart[id];}); saveCart();
  $('#filterNote').textContent=`${fmtShort(S.price)} PER SLEEVE · 10 PACKS OF 20`;
  $('#feeBig').textContent=fmtShort(S.shipping);
- $('#mobileLede').textContent=`Tracked delivery, ${fmtShort(S.shipping)} flat per order.`;
+ $('#mobileLede').textContent=`UK tracked next-working-day delivery, ${fmtShort(S.shipping)} per order (eligible postcodes).`;
  $('#detailPrice').textContent=fmt(S.price);
  renderProducts(); updateCount(); cutoff();
 }
@@ -57,25 +58,25 @@ function addProduct(id){const p=byId[id];if(!p)return;const cur=cart[id]||0;if(c
 function changeQty(id,change){const p=byId[id];if(!p)return;let next=(cart[id]||0)+change;if(next<=0)delete cart[id];else{if(next>stockOf(p)){toast(`ONLY ${stockOf(p)} AVAILABLE`);next=stockOf(p);}cart[id]=Math.min(S.maxPerOrder,next);}saveCart();updateCount();renderBag();}
 function bagItemsMarkup(){const lines=PRODUCTS.filter(p=>cart[p.id]>0);
  if(!lines.length)return `<div class="bag-empty"><div class="bag-empty-icon">◇</div><h3>YOUR BAG<br>IS EMPTY.</h3><p>Browse the products and add what you need.</p><button type="button" data-continue-browse>VIEW PRODUCTS ↗</button></div>`;
- return lines.map(p=>`<div class="bag-item"><div class="bag-thumb"><img src="${p.image}" alt="${esc(p.brand+' '+p.flavour)} packaging"></div><div class="bag-item-info"><small>${esc(p.brand)} / ${esc(p.series)}</small><strong>${esc(p.flavour.toUpperCase())}</strong><span>${fmtShort(S.price)} per sleeve</span><div class="qty-controls" role="group" aria-label="Quantity for ${esc(p.flavour)}"><button type="button" data-qty="${p.id}" data-change="-1" aria-label="Decrease ${esc(p.flavour)}">−</button><output>${cart[p.id]}</output><button type="button" data-qty="${p.id}" data-change="1" aria-label="Increase ${esc(p.flavour)}">+</button></div></div><span class="bag-unit-price">${fmt(S.price*cart[p.id])}</span></div>`).join('')+`<p class="qty-note">One sleeve is ten packs of twenty. Delivery is one flat charge however many sleeves you add.</p>`;
+ return lines.map(p=>`<div class="bag-item"><div class="bag-thumb"><img src="${p.image}" alt="${esc(p.brand+' '+p.flavour)} packaging"></div><div class="bag-item-info"><small>${esc(p.brand)} / ${esc(p.series)}</small><strong>${esc(p.flavour.toUpperCase())}</strong><span>${fmtShort(S.price)} per sleeve</span><div class="qty-controls" role="group" aria-label="Quantity for ${esc(p.flavour)}"><button type="button" data-qty="${p.id}" data-change="-1" aria-label="Decrease ${esc(p.flavour)}">−</button><output>${cart[p.id]}</output><button type="button" data-qty="${p.id}" data-change="1" aria-label="Increase ${esc(p.flavour)}">+</button></div></div><span class="bag-unit-price">${fmt(S.price*cart[p.id])}</span></div>`).join('')+`<p class="qty-note">One sleeve is ten packs of twenty. UK delivery is one £15 charge per order, however many sleeves you add.</p>`;
 }
 const F=[
  {k:'name',label:'FULL NAME',ph:'Name on the parcel',full:true,auto:'name'},
  {k:'email',label:'EMAIL',ph:'For your confirmation',type:'email',auto:'email'},
  {k:'phone',label:'PHONE',ph:'For the courier',type:'tel',auto:'tel'},
- {k:'country',label:'COUNTRY',select:true,full:true},
+ {k:'country',label:'DELIVERY COUNTRY',select:true,full:true},
  {k:'address1',label:'STREET ADDRESS',ph:'Building, street',full:true,auto:'address-line1'},
  {k:'address2',label:'APARTMENT / FLOOR (OPTIONAL)',ph:'',full:true,auto:'address-line2'},
  {k:'city',label:'CITY',ph:'',auto:'address-level2'},
- {k:'region',label:'REGION / EMIRATE / STATE',ph:'',auto:'address-level1'},
- {k:'postcode',label:'POSTCODE / ZIP (IF ANY)',ph:'',auto:'postal-code'},
+ {k:'region',label:'COUNTY (OPTIONAL)',ph:'',auto:'address-level1'},
+ {k:'postcode',label:'UK POSTCODE',ph:'e.g. SW1A 1AA',auto:'postal-code'},
  {k:'notes',label:'NOTE FOR US (OPTIONAL)',ph:'Delivery instructions, anything we should know',textarea:true,full:true},
 ];
 function formMarkup(){
- return `<p class="bag-post-intro">Where are we sending it? Your tracking number goes to this email the moment it ships.</p><form class="co-form" id="coForm" novalidate autocomplete="on">
+ return `<p class="bag-post-intro">UK delivery only. We will email your tracking reference after the courier accepts your parcel.</p><form class="co-form" id="coForm" novalidate autocomplete="on">
  ${F.map(f=>`<div class="co-field ${f.full?'full':''}" data-field="${f.k}"><label for="co-${f.k}">${f.label}</label>${f.select?`<select id="co-${f.k}" name="${f.k}" autocomplete="country"><option value="">Choose your country</option>${S.countries.map(c=>`<option value="${c.code}" ${form.country===c.code?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`:f.textarea?`<textarea id="co-${f.k}" name="${f.k}" placeholder="${esc(f.ph)}">${esc(form[f.k]||'')}</textarea>`:`<input id="co-${f.k}" name="${f.k}" type="${f.type||'text'}" placeholder="${esc(f.ph)}" value="${esc(form[f.k]||'')}" autocomplete="${f.auto||'on'}">`}<div class="field-error" hidden></div></div>`).join('')}
  <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
- <label class="co-check full" data-field="adult"><input type="checkbox" id="co-adult" ${form.adult?'checked':''}><span>I confirm I am 18 or over and it is legal for me to buy these products in my country.</span></label>
+ <label class="co-check full" data-field="adult"><input type="checkbox" id="co-adult" ${form.adult?'checked':''}><span>I confirm I am 18 or over and that my delivery address is in the UK.</span></label>
  </form>`;
 }
 function readForm(){const f=$('#coForm');if(!f)return;F.forEach(x=>{const el=f.elements[x.k];if(el)form[x.k]=el.value.trim();});form.adult=$('#co-adult').checked;sessionStorage.setItem('flav4_form',JSON.stringify(form));}
@@ -84,9 +85,10 @@ function validateForm(){readForm();const e={};
  if((form.name||'').length<2)e.name='Enter your full name.';
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email||''))e.email='Enter a valid email address.';
  if((form.phone||'').length<6)e.phone='Enter a phone number the courier can reach.';
- if(!form.country)e.country='Choose a country we deliver to.';
+ if(form.country!=='GB')e.country='We only deliver within the UK.';
  if((form.address1||'').length<4)e.address1='Enter your street address.';
- if((form.city||'').length<2)e.city='Enter your city.';
+ if((form.city||'').length<2)e.city='Enter your town or city.';
+  if(!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(form.postcode||''))e.postcode='Enter a valid UK postcode.';
  if(!form.adult)e.adult='You must confirm you are 18 or over.';
  showErrors(e);return !Object.keys(e).length;
 }
@@ -113,7 +115,7 @@ function renderBag(){
   details:`<button class="bag-primary" data-bag-review>REVIEW ORDER <span>↗</span></button><button class="bag-back" data-bag-back>← BACK TO BAG</button>`,
   review:`<button class="bag-primary" id="placeOrder" data-bag-place>PLACE ORDER <span>✓</span></button><button class="bag-back" data-bag-edit>← EDIT ADDRESS</button>`,
   done:`<button class="bag-primary" data-bag-reset>BACK TO PRODUCTS <span>↗</span></button>`}[step];
- bottom.innerHTML=`${totals}${action}<p class="bag-note">${step==='done'?'A COPY OF THIS ORDER IS IN YOUR INBOX.':'TRACKED DELIVERY · ONE FLAT CHARGE · 18+ ONLY'}</p>`;
+ bottom.innerHTML=`${totals}${action}<p class="bag-note">${step==='done'?'A COPY OF THIS ORDER IS IN YOUR INBOX.':'UK TRACKED DELIVERY · £15 PER ORDER · 18+ ONLY'}</p>`;
  if(step==='details'){const f=$('#coForm');f.addEventListener('input',readForm);f.addEventListener('change',readForm);}
 }
 async function placeOrder(){
@@ -129,7 +131,7 @@ async function placeOrder(){
 function openBag(){if(step==='done')step='bag';renderBag();openLayer('bagOverlay');}
 function cutoff(){const node=$('#cutoffStatus');if(!node)return;let o;try{o=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:S.timezone,weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(p=>[p.type,p.value]));}catch{return;}
  const weekday=['Mon','Tue','Wed','Thu','Fri'].includes(o.weekday);const remaining=(S.cutoffHour-Number(o.hour))*3600-Number(o.minute)*60-Number(o.second);
- if(weekday&&remaining>0){const h=Math.floor(remaining/3600),m=Math.floor((remaining%3600)/60),s=remaining%60;node.textContent=`SAME-DAY DISPATCH CLOSES IN ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else{node.textContent='ORDERS NOW SHIP NEXT WORKING DAY';}}
+ if(weekday&&remaining>0){const h=Math.floor(remaining/3600),m=Math.floor((remaining%3600)/60),s=remaining%60;node.textContent=`10AM UK CUTOFF IN ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else{node.textContent='TODAY'S 10AM UK CUTOFF HAS PASSED';}}
 function updateScroll(){const doc=document.documentElement;const max=Math.max(1,doc.scrollHeight-window.innerHeight);$('#progressLine').style.width=(Math.max(0,Math.min(1,scrollY/max))*100).toFixed(3)+'%';}
 load().catch(()=>toast('COULD NOT LOAD THE COLLECTION — REFRESH'));setInterval(cutoff,1000);setInterval(()=>{if($('#bagOverlay').hidden)load().catch(()=>{});},60000);
 let ticking=false;window.addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{updateScroll();ticking=false;});ticking=true;}},{passive:true});updateScroll();
