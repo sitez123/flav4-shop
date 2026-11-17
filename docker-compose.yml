@@ -30,7 +30,14 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    command: caddy reverse-proxy --from ${SITE_HOST:-:80} --to flav4:3000
+    # Serve both apex and www directly over automatic HTTPS.
+    # The preceding Caddy service only matched the VPS's temporary hostname.
+    command:
+      - /bin/sh
+      - -c
+      - |
+        printf '%s\\n' 'flav4.co.uk, www.flav4.co.uk {' '  reverse_proxy flav4:3000' '}' > /tmp/flav4-Caddyfile
+        exec caddy run --config /tmp/flav4-Caddyfile --adapter caddyfile
     volumes:
       - caddy_data:/data
     depends_on:
